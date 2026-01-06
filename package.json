@@ -1,6 +1,6 @@
 {
   "name": "tenx-http-exporter",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A flexible OpenMetrics exporter for HTTP (RPC and REST) endpoints",
   "main": "dist/index.js",
   "bin": {
