@@ -1,0 +1,21 @@
+metric_prefix: example
+cache_ttl: 60
+backoff:
+  max_retries: 3
+  initial_delay: 500
+
+profiles:
+  ethereum_example:
+    - name: block_number
+      help: Current block height
+      type: gauge
+      rpc:
+        method: eth_blockNumber
+        params: []
+
+targets:
+  - name: example
+    provider: publicnode
+    profile: ethereum_example
+    url: https://ethereum-rpc.publicnode.com
+
