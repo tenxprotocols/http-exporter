@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --fix",
     "build": "tsc",
-    "test": "jest"
+    "test": "NODE_NO_WARNINGS=1 jest"
   },
   "keywords": [],
   "author": "",

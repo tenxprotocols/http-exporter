@@ -4,13 +4,13 @@ import logger from './logger'
 export interface RPCRequest {
   jsonrpc: '2.0'
   method: string
-  params: any[]
+  params: unknown[]
   id: number
 }
 
 export interface RPCResponse {
   jsonrpc: '2.0'
-  result?: any
+  result?: unknown
   error?: {
     code: number
     message: string
@@ -23,7 +23,7 @@ export interface BackoffConfig {
   initial_delay: number
 }
 
-const cache = new Map<string, { value: any; expires: number }>()
+const cache = new Map<string, { value: unknown; expires: number }>()
 let requestId = 0
 
 export function clearCache() {
@@ -33,10 +33,10 @@ export function clearCache() {
 export async function callRPC(
   url: string,
   method: string,
-  params: any[],
+  params: unknown[],
   backoff: BackoffConfig,
   ttlSeconds: number,
-): Promise<any> {
+): Promise<unknown> {
   const cacheKey = `rpc:${url}:${method}:${JSON.stringify(params)}`
   const cached = cache.get(cacheKey)
 
@@ -48,7 +48,7 @@ export async function callRPC(
   logger.debug(`Cache miss for RPC ${url} ${method}`)
 
   let delay = backoff.initial_delay
-  let lastError: any
+  let lastError: unknown
 
   for (let i = 0; i <= backoff.max_retries; i++) {
     try {
@@ -74,14 +74,15 @@ export async function callRPC(
       })
 
       return result
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error
+      const message = error instanceof Error ? error.message : String(error)
       if (i < backoff.max_retries) {
-        logger.warn(`RPC call failed for ${url} ${method}, retrying in ${delay}ms: ${error.message}`)
+        logger.warn(`RPC call failed for ${url} ${method}, retrying in ${delay}ms: ${message}`)
         await new Promise((resolve) => setTimeout(resolve, delay))
         delay *= 2
       } else {
-        logger.error(`RPC call failed for ${url} ${method} after ${i + 1} attempts: ${error.message}`)
+        logger.error(`RPC call failed for ${url} ${method} after ${i + 1} attempts: ${message}`)
       }
     }
   }
@@ -93,10 +94,10 @@ export async function callREST(
   baseUrl: string,
   path: string,
   method: string,
-  params: Record<string, any> | undefined,
+  params: Record<string, unknown> | undefined,
   backoff: BackoffConfig,
   ttlSeconds: number,
-): Promise<any> {
+): Promise<unknown> {
   const url = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
   const cacheKey = `rest:${url}:${method}:${JSON.stringify(params)}`
   const cached = cache.get(cacheKey)
@@ -109,7 +110,7 @@ export async function callREST(
   logger.debug(`Cache miss for REST ${url} ${method}`)
 
   let delay = backoff.initial_delay
-  let lastError: any
+  let lastError: unknown
 
   for (let i = 0; i <= backoff.max_retries; i++) {
     try {
@@ -129,14 +130,15 @@ export async function callREST(
       })
 
       return result
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error
+      const message = error instanceof Error ? error.message : String(error)
       if (i < backoff.max_retries) {
-        logger.warn(`REST call failed for ${url} ${method}, retrying in ${delay}ms: ${error.message}`)
+        logger.warn(`REST call failed for ${url} ${method}, retrying in ${delay}ms: ${message}`)
         await new Promise((resolve) => setTimeout(resolve, delay))
         delay *= 2
       } else {
-        logger.error(`REST call failed for ${url} ${method} after ${i + 1} attempts: ${error.message}`)
+        logger.error(`REST call failed for ${url} ${method} after ${i + 1} attempts: ${message}`)
       }
     }
   }
