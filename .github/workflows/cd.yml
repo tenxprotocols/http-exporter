@@ -51,6 +51,8 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
+          labels: |
+            org.opencontainers.image.description=A flexible OpenMetrics exporter for HTTP (RPC and REST) endpoints
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -60,5 +62,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
