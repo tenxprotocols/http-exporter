@@ -45,6 +45,21 @@ fs.watch(configPath, (event) => {
   }
 })
 
+router.get('/healthz', (ctx) => {
+  ctx.status = 200
+  ctx.body = 'OK'
+})
+
+router.get('/readyz', (ctx) => {
+  if (config) {
+    ctx.status = 200
+    ctx.body = 'OK'
+  } else {
+    ctx.status = 503
+    ctx.body = 'Service Unavailable'
+  }
+})
+
 router.get('/metrics', async (ctx) => {
   logger.debug('Received request for /metrics')
   const results: string[] = []
