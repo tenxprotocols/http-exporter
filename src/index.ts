@@ -1,4 +1,6 @@
+#!/usr/bin/env node
 import fs from 'node:fs'
+import { parseArgs } from 'node:util'
 
 import Koa from 'koa'
 import Router from '@koa/router'
@@ -8,10 +10,19 @@ import logger from './logger'
 import { formatMetric, formatValue, getValueByPath } from './mapper'
 import { callREST, callRPC } from './rpc'
 
+const { values } = parseArgs({
+  options: {
+    config: {
+      type: 'string',
+      short: 'c',
+    },
+  },
+})
+
 const app = new Koa()
 const router = new Router()
 
-const configPath = process.env.CONFIG_PATH || 'config.yaml'
+const configPath = (values.config as string) || process.env.CONFIG_PATH || 'config.yaml'
 let config: Config
 
 function reloadConfig() {
