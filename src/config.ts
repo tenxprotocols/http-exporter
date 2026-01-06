@@ -1,6 +1,7 @@
-import { z } from 'zod'
-import fs from 'fs'
+import fs from 'node:fs'
+
 import yaml from 'js-yaml'
+import { z } from 'zod'
 
 export const MetricSchema = z
   .object({
@@ -73,7 +74,7 @@ export type Target = z.infer<typeof TargetSchema>
 
 export function loadConfig(path: string): Config {
   const fileContents = fs.readFileSync(path, 'utf8')
-  let data: any
+  let data: unknown
 
   if (path.endsWith('.yaml') || path.endsWith('.yml')) {
     data = yaml.load(fileContents)

@@ -1,13 +1,13 @@
 import _ from 'lodash'
 import logger from './logger'
 
-export function getValueByPath(obj: any, path: string): any {
+export function getValueByPath(obj: unknown, path: string): unknown {
   logger.debug(`Get value at path '${path}' from ${JSON.stringify(obj)}`)
   if (!path || path === '') return obj
   return _.get(obj, path)
 }
 
-export function formatValue(value: any, map?: Record<string, number>): number {
+export function formatValue(value: unknown, map?: Record<string, number>): number {
   if (map && value !== undefined && value !== null) {
     const mapped = map[String(value)]
     if (mapped !== undefined) {

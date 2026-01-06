@@ -6,7 +6,8 @@
     "useIgnoreFile": false
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": ["src/**", "!dist"]
   },
   "formatter": {
     "enabled": true,
@@ -24,6 +25,28 @@
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "asNeeded"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              ":NODE:",
+              ":BLANK_LINE:",
+              "koa",
+              "@koa/*",
+              "koa-*",
+              ":BLANK_LINE:",
+              ":NPM:",
+              ":BLANK_LINE:",
+              ":RELATIVE:"
+            ]
+          }
+        }
+      }
     }
   }
 }
