@@ -48,7 +48,6 @@ export const ProfileSchema = z.array(MetricSchema)
 export const TargetSchema = z.object({
   url: z.string().url(),
   name: z.string(),
-  provider: z.string(),
   profile: z.string(),
 })
 

@@ -15,7 +15,6 @@ profiles:
 
 targets:
   - name: example
-    provider: publicnode
     profile: ethereum_example
     url: https://ethereum-rpc.publicnode.com
 
