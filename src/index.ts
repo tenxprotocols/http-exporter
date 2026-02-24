@@ -103,7 +103,7 @@ router.get('/metrics', async (ctx) => {
         for (const m of metricsToProcess) {
           const value = formatValue(getValueByPath(rawValue, m.path), m.map || metric.map)
           results.push(
-            formatMetric(`${target.name}_${m.name}`, m.help, m.type, value, config.metric_prefix, {
+            formatMetric(`${target.name}.${m.name}`, m.help, m.type, value, config.metric_prefix, {
               provider: target.provider,
             }),
           )
@@ -115,8 +115,8 @@ router.get('/metrics', async (ctx) => {
     }
   }
 
-  ctx.body = `${results.join('\n\n')}\n`
-  ctx.type = 'text/plain; version=0.0.4; charset=utf-8'
+  ctx.body = `${results.join('\n\n')}\n# EOF\n`
+  ctx.type = 'application/openmetrics-text; version=1.0.0; charset=utf-8'
 })
 
 app.use(router.routes()).use(router.allowedMethods())

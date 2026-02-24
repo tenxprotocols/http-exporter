@@ -57,7 +57,7 @@ export function formatMetric(
   prefix = '',
   labels: Record<string, string> = {},
 ): string {
-  const fullName = prefix ? `${prefix}_${name}` : name
+  const fullName = prefix ? `${prefix}.${name}` : name
   const labelStr = Object.entries(labels)
     .map(([k, v]) => `${k}="${v}"`)
     .join(',')
