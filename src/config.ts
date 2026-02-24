@@ -3,9 +3,15 @@ import fs from 'node:fs'
 import yaml from 'js-yaml'
 import { z } from 'zod'
 
+// OpenMetrics metric names must match [a-zA-Z_:][a-zA-Z0-9_:]*
+const OPENMETRICS_NAME_RE = /^[a-zA-Z_:][a-zA-Z0-9_:]*$/
+const openmetricsName = z
+  .string()
+  .regex(OPENMETRICS_NAME_RE, 'Must be a valid OpenMetrics name (letters, digits, underscores, colons only — no dots)')
+
 export const MetricSchema = z
   .object({
-    name: z.string().optional(),
+    name: openmetricsName.optional(),
     help: z.string().optional(),
     type: z.enum(['gauge', 'counter']).default('gauge'),
     rpc: z
@@ -26,7 +32,7 @@ export const MetricSchema = z
     metrics: z
       .array(
         z.object({
-          name: z.string(),
+          name: openmetricsName,
           help: z.string(),
           type: z.enum(['gauge', 'counter']).default('gauge'),
           path: z.string().default(''),
@@ -47,13 +53,12 @@ export const ProfileSchema = z.array(MetricSchema)
 
 export const TargetSchema = z.object({
   url: z.string().url(),
-  name: z.string(),
+  name: openmetricsName,
   profile: z.string(),
-  labels: z.record(z.string(), z.string()).default({}),
 })
 
 export const ConfigSchema = z.object({
-  metric_prefix: z.string().default(''),
+  metric_prefix: openmetricsName.or(z.literal('')).default(''),
   cache_ttl: z.number().default(60),
   backoff: z
     .object({

@@ -103,7 +103,7 @@ router.get('/metrics', async (ctx) => {
         for (const m of metricsToProcess) {
           const value = formatValue(getValueByPath(rawValue, m.path), m.map || metric.map)
           samples.push({
-            name: `${target.name}.${m.name}`,
+            name: `${target.name}_${m.name}`,
             help: m.help,
             type: m.type,
             value,
