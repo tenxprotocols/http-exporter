@@ -17,4 +17,7 @@ targets:
   - name: example
     profile: ethereum_example
     url: https://ethereum-rpc.publicnode.com
+    labels:
+      network: mainnet
+      chain: ethereum
 

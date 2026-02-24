@@ -103,7 +103,7 @@ router.get('/metrics', async (ctx) => {
         for (const m of metricsToProcess) {
           const value = formatValue(getValueByPath(rawValue, m.path), m.map || metric.map)
           results.push(
-            formatMetric(`${target.name}.${m.name}`, m.help, m.type, value, config.metric_prefix),
+            formatMetric(`${target.name}.${m.name}`, m.help, m.type, value, config.metric_prefix, target.labels),
           )
         }
       } catch (error: unknown) {
