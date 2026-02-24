@@ -111,39 +111,4 @@ test_metric{label1="val1",label2="val2"} 123`)
     })
   })
 
-  describe('formatMetricFamilies', () => {
-    it('should group samples with the same metric name under one HELP/TYPE declaration', () => {
-      const result = formatMetricFamilies([
-        { name: 'bootstrapped', help: 'Current bootstrapped status', type: 'gauge', value: 1, prefix: 'tenx', labels: { provider: 'tzkt' } },
-        { name: 'bootstrapped', help: 'Current bootstrapped status', type: 'gauge', value: 1, prefix: 'tenx', labels: { provider: 'smartpy' } },
-      ])
-      expect(result).toBe(
-        '# HELP tenx.bootstrapped Current bootstrapped status\n' +
-        '# TYPE tenx.bootstrapped gauge\n' +
-        'tenx.bootstrapped{provider="tzkt"} 1\n' +
-        'tenx.bootstrapped{provider="smartpy"} 1',
-      )
-    })
-
-    it('should separate different metric families with a single newline', () => {
-      const result = formatMetricFamilies([
-        { name: 'metric_a', help: 'Help A', type: 'gauge', value: 1, prefix: '', labels: {} },
-        { name: 'metric_b', help: 'Help B', type: 'counter', value: 2, prefix: '', labels: {} },
-      ])
-      expect(result).toBe(
-        '# HELP metric_a Help A\n' +
-        '# TYPE metric_a gauge\n' +
-        'metric_a 1\n' +
-        '# HELP metric_b Help B\n' +
-        '# TYPE metric_b counter\n' +
-        'metric_b 2',
-      )
-      // No blank lines between families
-      expect(result).not.toContain('\n\n')
-    })
-
-    it('should return empty string for no samples', () => {
-      expect(formatMetricFamilies([])).toBe('')
-    })
-  })
 })
