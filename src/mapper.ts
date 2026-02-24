@@ -49,6 +49,45 @@ export function formatValue(value: unknown, map?: Record<string, number>): numbe
   return -1
 }
 
+export interface MetricSample {
+  name: string
+  help: string
+  type: string
+  value: number
+  prefix: string
+  labels: Record<string, string>
+}
+
+export function formatMetricSample(sample: MetricSample): { fullName: string; line: string } {
+  const fullName = sample.prefix ? `${sample.prefix}.${sample.name}` : sample.name
+  const labelStr = Object.entries(sample.labels)
+    .map(([k, v]) => `${k}="${v}"`)
+    .join(',')
+  const fullLabels = labelStr ? `{${labelStr}}` : ''
+  return { fullName, line: `${fullName}${fullLabels} ${sample.value}` }
+}
+
+export function formatMetricFamilies(samples: MetricSample[]): string {
+  const families = new Map<string, { help: string; type: string; lines: string[] }>()
+
+  for (const sample of samples) {
+    const { fullName, line } = formatMetricSample(sample)
+    let family = families.get(fullName)
+    if (!family) {
+      family = { help: sample.help, type: sample.type, lines: [] }
+      families.set(fullName, family)
+    }
+    family.lines.push(line)
+  }
+
+  const blocks: string[] = []
+  for (const [fullName, family] of families) {
+    blocks.push(`# HELP ${fullName} ${family.help}\n# TYPE ${fullName} ${family.type}\n${family.lines.join('\n')}`)
+  }
+
+  return blocks.join('\n')
+}
+
 export function formatMetric(
   name: string,
   help: string,
@@ -57,14 +96,6 @@ export function formatMetric(
   prefix = '',
   labels: Record<string, string> = {},
 ): string {
-  const fullName = prefix ? `${prefix}.${name}` : name
-  const labelStr = Object.entries(labels)
-    .map(([k, v]) => `${k}="${v}"`)
-    .join(',')
-
-  const fullLabels = labelStr ? `{${labelStr}}` : ''
-
-  return `# HELP ${fullName} ${help}
-# TYPE ${fullName} ${type}
-${fullName}${fullLabels} ${value}`
+  const { fullName, line } = formatMetricSample({ name, help, type, value, prefix, labels })
+  return `# HELP ${fullName} ${help}\n# TYPE ${fullName} ${type}\n${line}`
 }

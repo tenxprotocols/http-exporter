@@ -7,7 +7,7 @@ import Router from '@koa/router'
 
 import { type Config, loadConfig } from './config'
 import logger from './logger'
-import { formatMetric, formatValue, getValueByPath } from './mapper'
+import { type MetricSample, formatMetricFamilies, formatValue, getValueByPath } from './mapper'
 import { callREST, callRPC } from './rpc'
 
 const { values } = parseArgs({
@@ -62,7 +62,7 @@ router.get('/readyz', (ctx) => {
 
 router.get('/metrics', async (ctx) => {
   logger.debug('Received request for /metrics')
-  const results: string[] = []
+  const samples: MetricSample[] = []
 
   for (const target of config.targets) {
     const profile = config.profiles[target.profile]
@@ -102,9 +102,14 @@ router.get('/metrics', async (ctx) => {
 
         for (const m of metricsToProcess) {
           const value = formatValue(getValueByPath(rawValue, m.path), m.map || metric.map)
-          results.push(
-            formatMetric(`${target.name}.${m.name}`, m.help, m.type, value, config.metric_prefix, target.labels),
-          )
+          samples.push({
+            name: `${target.name}.${m.name}`,
+            help: m.help,
+            type: m.type,
+            value,
+            prefix: config.metric_prefix,
+            labels: target.labels || {},
+          })
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error)
@@ -113,7 +118,7 @@ router.get('/metrics', async (ctx) => {
     }
   }
 
-  ctx.body = `${results.join('\n\n')}\n# EOF\n`
+  ctx.body = `${formatMetricFamilies(samples)}\n# EOF\n`
   ctx.type = 'application/openmetrics-text; version=1.0.0; charset=utf-8'
 })
 
