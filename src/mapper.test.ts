@@ -55,24 +55,24 @@ describe('mapper', () => {
 
   describe('formatMetric', () => {
     it('should format metric without prefix or labels', () => {
-      const result = formatMetric('test.metric', 'Test help', 'gauge', 123)
-      expect(result).toBe(`# HELP test.metric Test help
-# TYPE test.metric gauge
-test.metric 123`)
+      const result = formatMetric('test_metric', 'Test help', 'gauge', 123)
+      expect(result).toBe(`# HELP test_metric Test help
+# TYPE test_metric gauge
+test_metric 123`)
     })
 
-    it('should format metric with prefix', () => {
-      const result = formatMetric('test.metric', 'Test help', 'gauge', 123, 'prefix')
-      expect(result).toBe(`# HELP prefix.test.metric Test help
-# TYPE prefix.test.metric gauge
-prefix.test.metric 123`)
+    it('should format metric with prefix using underscore separator', () => {
+      const result = formatMetric('test_metric', 'Test help', 'gauge', 123, 'prefix')
+      expect(result).toBe(`# HELP prefix_test_metric Test help
+# TYPE prefix_test_metric gauge
+prefix_test_metric 123`)
     })
 
     it('should format metric with labels', () => {
-      const result = formatMetric('test.metric', 'Test help', 'gauge', 123, '', { label1: 'val1', label2: 'val2' })
-      expect(result).toBe(`# HELP test.metric Test help
-# TYPE test.metric gauge
-test.metric{label1="val1",label2="val2"} 123`)
+      const result = formatMetric('test_metric', 'Test help', 'gauge', 123, '', { label1: 'val1', label2: 'val2' })
+      expect(result).toBe(`# HELP test_metric Test help
+# TYPE test_metric gauge
+test_metric{label1="val1",label2="val2"} 123`)
     })
   })
 
@@ -83,10 +83,10 @@ test.metric{label1="val1",label2="val2"} 123`)
         { name: 'bootstrapped', help: 'Current bootstrapped status', type: 'gauge', value: 1, prefix: 'tenx', labels: { provider: 'smartpy' } },
       ])
       expect(result).toBe(
-        '# HELP tenx.bootstrapped Current bootstrapped status\n' +
-        '# TYPE tenx.bootstrapped gauge\n' +
-        'tenx.bootstrapped{provider="tzkt"} 1\n' +
-        'tenx.bootstrapped{provider="smartpy"} 1',
+        '# HELP tenx_bootstrapped Current bootstrapped status\n' +
+        '# TYPE tenx_bootstrapped gauge\n' +
+        'tenx_bootstrapped{provider="tzkt"} 1\n' +
+        'tenx_bootstrapped{provider="smartpy"} 1',
       )
     })
 
@@ -103,7 +103,6 @@ test.metric{label1="val1",label2="val2"} 123`)
         '# TYPE metric_b counter\n' +
         'metric_b 2',
       )
-      // No blank lines between families
       expect(result).not.toContain('\n\n')
     })
 
@@ -111,4 +110,5 @@ test.metric{label1="val1",label2="val2"} 123`)
       expect(formatMetricFamilies([])).toBe('')
     })
   })
+
 })

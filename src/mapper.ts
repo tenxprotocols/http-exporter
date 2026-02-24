@@ -59,7 +59,7 @@ export interface MetricSample {
 }
 
 export function formatMetricSample(sample: MetricSample): { fullName: string; line: string } {
-  const fullName = sample.prefix ? `${sample.prefix}.${sample.name}` : sample.name
+  const fullName = sample.prefix ? `${sample.prefix}_${sample.name}` : sample.name
   const labelStr = Object.entries(sample.labels)
     .map(([k, v]) => `${k}="${v}"`)
     .join(',')
@@ -96,6 +96,7 @@ export function formatMetric(
   prefix = '',
   labels: Record<string, string> = {},
 ): string {
-  const { fullName, line } = formatMetricSample({ name, help, type, value, prefix, labels })
+  const sample: MetricSample = { name, help, type, value, prefix, labels }
+  const { fullName, line } = formatMetricSample(sample)
   return `# HELP ${fullName} ${help}\n# TYPE ${fullName} ${type}\n${line}`
 }
