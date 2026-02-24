@@ -55,6 +55,7 @@ export const TargetSchema = z.object({
   url: z.string().url(),
   name: openmetricsName,
   profile: z.string(),
+  labels: z.record(z.string(), z.string()).default({}),
 })
 
 export const ConfigSchema = z.object({
