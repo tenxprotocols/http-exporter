@@ -4,9 +4,10 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install -g pnpm@10.25.0
 
 FROM base AS build
-COPY . /usr/src/app
 WORKDIR /usr/src/app
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+COPY . .
 RUN pnpm run build
 RUN pnpm prune --prod
 

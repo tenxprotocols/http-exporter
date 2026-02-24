@@ -6,7 +6,7 @@ backoff:
 
 profiles:
   ethereum_example:
-    - name: block_number
+    - name: block.number
       help: Current block height
       type: gauge
       rpc:
