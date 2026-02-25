@@ -1,65 +1,102 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g. 1.0.0)'
-        required: true
-        default: 'patch'
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
 
 jobs:
-  release:
+  release-please:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: actions/checkout@v4
+      - id: release
+        uses: googleapis/release-please-action@v4
         with:
-          fetch-depth: 0
+          release-type: node
           token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
+  npm-publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
       - name: Install mise
         uses: jdx/mise-action@v2
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Publish to npm
+        run: pnpm publish --no-git-checks --provenance
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "TenX-Scotty"
-          git config --global user.email "bot+scotty+github@groups.tenx.inc"
+  docker-publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.release-please.outputs.tag_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release-please.outputs.tag_name }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.description=A flexible OpenMetrics exporter for HTTP (RPC and REST) endpoints
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Bump version and tag
-        run: |
-          # Determine new version
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          if [[ "${{ github.event.inputs.version }}" =~ ^(patch|minor|major)$ ]]; then
-            npm version ${{ github.event.inputs.version }} --no-git-tag-version
-            NEW_VERSION=$(node -p "require('./package.json').version")
-          else
-            NEW_VERSION=${{ github.event.inputs.version }}
-            npm version $NEW_VERSION --no-git-tag-version
-          fi
-          
-          echo "Releasing v$NEW_VERSION"
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          
-          # Commit package.json change
-          git add package.json
-          git commit -m "chore: release v$NEW_VERSION"
-          
-          # Create tag
-          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
-          
-          # Push changes and tag
-          git push origin main
-          git push origin "v$NEW_VERSION"
-
-      - name: Create GitHub Release
+  upload-release-artifacts:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mise
+        uses: jdx/mise-action@v2
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Pack npm tarball
+        run: pnpm pack
+      - name: Upload release artifact
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.NEW_VERSION }}
-          name: Release v${{ env.NEW_VERSION }}
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: '*.tgz'
