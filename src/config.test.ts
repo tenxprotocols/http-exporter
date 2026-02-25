@@ -22,7 +22,8 @@ describe('config validation', () => {
 
   it('should reject metric names containing dots', () => {
     const bad = structuredClone(validConfig)
-    bad.profiles.tezos[0].metrics![0].name = 'sync.state'
+    const badMetrics = bad.profiles.tezos[0].metrics
+    if (badMetrics) badMetrics[0].name = 'sync.state'
     expect(() => ConfigSchema.parse(bad)).toThrow(/OpenMetrics/)
   })
 
@@ -46,7 +47,8 @@ describe('config validation', () => {
 
   it('should accept info metric type', () => {
     const cfg = structuredClone(validConfig)
-    cfg.profiles.tezos[0].metrics![0].type = 'info'
+    const metrics = cfg.profiles.tezos[0].metrics
+    if (metrics) metrics[0].type = 'info'
     expect(() => ConfigSchema.parse(cfg)).not.toThrow()
   })
 })
