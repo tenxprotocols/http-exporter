@@ -21,6 +21,15 @@ describe('mapper', () => {
       const obj = { items: [1, 2, 3] }
       expect(getValueByPath(obj, 'items.length')).toBe(3)
     })
+
+    it('should return root value for dot path', () => {
+      expect(getValueByPath('NetXdQprcVkpaWU', '.')).toBe('NetXdQprcVkpaWU')
+    })
+
+    it('should return root object for dot path', () => {
+      const obj = { a: 1 }
+      expect(getValueByPath(obj, '.')).toEqual({ a: 1 })
+    })
   })
 
   describe('formatValue', () => {

@@ -13,7 +13,7 @@ export const MetricSchema = z
   .object({
     name: openmetricsName.optional(),
     help: z.string().optional(),
-    type: z.enum(['gauge', 'counter']).default('gauge'),
+    type: z.enum(['gauge', 'counter', 'info']).default('gauge'),
     rpc: z
       .object({
         method: z.string(),
@@ -34,7 +34,7 @@ export const MetricSchema = z
         z.object({
           name: openmetricsName,
           help: z.string(),
-          type: z.enum(['gauge', 'counter']).default('gauge'),
+          type: z.enum(['gauge', 'counter', 'info']).default('gauge'),
           path: z.string().default(''),
           map: z.record(z.string(), z.number()).optional(),
         }),
