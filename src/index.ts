@@ -105,7 +105,7 @@ router.get('/metrics', async (ctx) => {
 
           if (m.type === 'info') {
             samples.push({
-              name: `${target.name}_${m.name}_info`,
+              name: `${m.name}_info`,
               help: m.help,
               type: 'gauge',
               value: 1,
@@ -115,7 +115,7 @@ router.get('/metrics', async (ctx) => {
           } else {
             const value = formatValue(extracted, m.map || metric.map)
             samples.push({
-              name: `${target.name}_${m.name}`,
+              name: `${m.name}`,
               help: m.help,
               type: m.type,
               value,
