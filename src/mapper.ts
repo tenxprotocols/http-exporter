@@ -3,7 +3,7 @@ import logger from './logger'
 
 export function getValueByPath(obj: unknown, path: string): unknown {
   logger.debug(`Get value at path '${path}' from ${JSON.stringify(obj)}`)
-  if (!path || path === '') return obj
+  if (!path || path === '' || path === '.') return obj
   return _.get(obj, path)
 }
 

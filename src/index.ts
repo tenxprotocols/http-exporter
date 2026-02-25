@@ -101,15 +101,28 @@ router.get('/metrics', async (ctx) => {
         ]
 
         for (const m of metricsToProcess) {
-          const value = formatValue(getValueByPath(rawValue, m.path), m.map || metric.map)
-          samples.push({
-            name: `${target.name}_${m.name}`,
-            help: m.help,
-            type: m.type,
-            value,
-            prefix: config.metric_prefix,
-            labels: target.labels || {},
-          })
+          const extracted = getValueByPath(rawValue, m.path)
+
+          if (m.type === 'info') {
+            samples.push({
+              name: `${target.name}_${m.name}_info`,
+              help: m.help,
+              type: 'gauge',
+              value: 1,
+              prefix: config.metric_prefix,
+              labels: { ...(target.labels || {}), [m.name]: String(extracted) },
+            })
+          } else {
+            const value = formatValue(extracted, m.map || metric.map)
+            samples.push({
+              name: `${target.name}_${m.name}`,
+              help: m.help,
+              type: m.type,
+              value,
+              prefix: config.metric_prefix,
+              labels: target.labels || {},
+            })
+          }
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error)
