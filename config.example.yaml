@@ -26,4 +26,3 @@ targets:
     labels:
       network: mainnet
       chain: ethereum
-

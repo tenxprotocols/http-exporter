@@ -19,5 +19,5 @@ tenx-http-exporter --config ./config.yaml
 ```bash
 docker run --rm -it --p 3000:3000 \
 -v $(pwd)/config.yaml:/usr/src/app/config.yaml \
-ghcr.io/tenx-ts/tenx-http-exporter tenx-http-exporter -c config.yaml
+ghcr.io/tenxprotocols/http-exporter http-exporter -c config.yaml
 ```
