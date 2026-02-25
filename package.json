@@ -1,16 +1,25 @@
 {
-  "name": "tenx-http-exporter",
+  "name": "@tenxprotocols/http-exporter",
   "version": "4.0.0",
   "description": "A flexible OpenMetrics exporter for HTTP (RPC and REST) endpoints",
   "main": "dist/index.js",
   "bin": {
-    "tenx-http-exporter": "dist/index.js"
+    "http-exporter": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "config.example.yaml"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "lint": "biome lint",
     "lint:fix": "biome lint --fix",
     "build": "tsc",
+    "build:clean": "rm -rf dist && tsc",
+    "prepublishOnly": "tsc",
     "test": "NODE_NO_WARNINGS=1 jest",
     "docker:build": "docker build -t tenx-http-exporter .",
     "docker:run": "docker run --rm -p 3000:3000 -v ./config.example.yaml:/usr/src/app/config.yaml tenx-http-exporter"
