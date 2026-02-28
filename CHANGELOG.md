@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.0.0](https://github.com/tenxprotocols/http-exporter/compare/v5.0.1...v6.0.0) (2026-02-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** add per-profile and per-metric config overrides
+
+### Features
+
+* **config:** add per-profile and per-metric config overrides ([5219b4d](https://github.com/tenxprotocols/http-exporter/commit/5219b4d525c63b7efc60adea3eae16547b70b6cc))
+
 ## [5.0.1](https://github.com/tenxprotocols/http-exporter/compare/v5.0.0...v5.0.1) (2026-02-25)
 
 
