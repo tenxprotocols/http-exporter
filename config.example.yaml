@@ -1,28 +1,98 @@
-metric_prefix: example
+# Global defaults — apply to all profiles/metrics unless overridden
+metric_prefix: tenx
 cache_ttl: 60
+timeout: 10000
 backoff:
   max_retries: 3
   initial_delay: 500
+headers:
+  User-Agent: http-exporter
 
 profiles:
-  ethereum_example:
-    - name: block_number
-      help: Current block height
-      type: gauge
-      rpc:
-        method: eth_blockNumber
-        params: []
-    - name: chain_id
-      help: Chain identifier
-      type: info
-      rpc:
-        method: eth_chainId
-        path: "."
+  # Ethereum JSON-RPC — blocks every ~12s
+  ethereum:
+    metric_prefix: eth
+    cache_ttl: 10
+    labels:
+      protocol: ethereum
+    metrics:
+      - name: block_number
+        help: Latest block number
+        type: gauge
+        cache_ttl: 5
+        rpc:
+          method: eth_blockNumber
+      - name: chain_id
+        help: Chain identifier
+        type: info
+        cache_ttl: 3600
+        rpc:
+          method: eth_chainId
+          path: "."
+      - name: gas_price
+        help: Current gas price in wei
+        type: gauge
+        cache_ttl: 5
+        rpc:
+          method: eth_gasPrice
+
+  # Solana JSON-RPC — slots every ~400ms, needs faster polling
+  # and more retries for flaky public RPCs
+  solana:
+    metric_prefix: sol
+    cache_ttl: 5
+    backoff:
+      max_retries: 5
+      initial_delay: 200
+    timeout: 5000
+    labels:
+      protocol: solana
+    metrics:
+      - name: slot
+        help: Current slot number
+        type: gauge
+        cache_ttl: 2
+        rpc:
+          method: getSlot
+      - name: epoch
+        help: Current epoch number
+        type: gauge
+        cache_ttl: 60
+        rpc:
+          method: getEpochInfo
+          path: epoch
+      - name: block_height
+        help: Current block height
+        type: gauge
+        cache_ttl: 2
+        rpc:
+          method: getBlockHeight
 
 targets:
-  - name: example
-    profile: ethereum_example
+  - name: eth_mainnet
+    profile: ethereum
     url: https://ethereum-rpc.publicnode.com
     labels:
       network: mainnet
-      chain: ethereum
+
+  - name: eth_sepolia
+    profile: ethereum
+    url: https://ethereum-sepolia-rpc.publicnode.com
+    labels:
+      network: sepolia
+
+  # Private RPC endpoint with authentication
+  # - name: eth_mainnet_private
+  #   profile: ethereum
+  #   url: https://your-rpc-provider.com
+  #   headers:
+  #     Authorization: "Bearer your-api-key"
+  #   labels:
+  #     network: mainnet
+  #     provider: private
+
+  - name: sol_mainnet
+    profile: solana
+    url: https://api.mainnet-beta.solana.com
+    labels:
+      network: mainnet
