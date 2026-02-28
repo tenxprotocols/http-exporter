@@ -36,6 +36,8 @@ export async function callRPC(
   params: unknown[],
   backoff: BackoffConfig,
   ttlSeconds: number,
+  timeout: number,
+  headers: Record<string, string> = {},
 ): Promise<unknown> {
   const cacheKey = `rpc:${url}:${method}:${JSON.stringify(params)}`
   const cached = cache.get(cacheKey)
@@ -60,7 +62,7 @@ export async function callRPC(
         id,
       }
       logger.debug(`RPC Request to ${url}: ${JSON.stringify(payload)}`)
-      const response = await axios.post<RPCResponse>(url, payload)
+      const response = await axios.post<RPCResponse>(url, payload, { timeout, headers })
       logger.debug(`RPC Response from ${url}: ${JSON.stringify(response.data)}`)
 
       if (response.data.error) {
@@ -97,6 +99,8 @@ export async function callREST(
   params: Record<string, unknown> | undefined,
   backoff: BackoffConfig,
   ttlSeconds: number,
+  timeout: number,
+  headers: Record<string, string> = {},
 ): Promise<unknown> {
   const url = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
   const cacheKey = `rest:${url}:${method}:${JSON.stringify(params)}`
@@ -120,6 +124,8 @@ export async function callREST(
         url,
         params: method === 'GET' ? params : undefined,
         data: method !== 'GET' ? params : undefined,
+        timeout,
+        headers,
       })
       logger.debug(`REST Response from ${url}: ${JSON.stringify(response.data)}`)
 

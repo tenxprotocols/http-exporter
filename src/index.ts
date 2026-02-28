@@ -7,8 +7,9 @@ import Router from '@koa/router'
 
 import { type Config, loadConfig } from './config'
 import logger from './logger'
-import { type MetricSample, formatMetricFamilies, formatValue, getValueByPath } from './mapper'
-import { callREST, callRPC } from './rpc'
+import { formatMetricFamilies, formatValue, getValueByPath, type MetricSample } from './mapper'
+import { mergeHeaders, mergeLabels, resolveBackoff, resolveCacheTtl, resolvePrefix, resolveTimeout } from './resolve'
+import { callREST, callRPC, clearCache } from './rpc'
 
 const { values } = parseArgs({
   options: {
@@ -28,6 +29,7 @@ let config: Config
 function reloadConfig() {
   try {
     config = loadConfig(configPath)
+    clearCache()
     logger.info(`Loaded configuration from ${configPath}`)
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
@@ -71,20 +73,38 @@ router.get('/metrics', async (ctx) => {
       continue
     }
 
-    for (const metric of profile) {
+    const headers = mergeHeaders(config, target)
+    const labels = mergeLabels(profile, target)
+    const prefix = resolvePrefix(config, profile)
+
+    for (const metric of profile.metrics) {
       try {
+        const cacheTtl = resolveCacheTtl(config, profile, metric)
+        const backoff = resolveBackoff(config, profile, metric)
+        const timeout = resolveTimeout(config, profile, metric)
+
         let rawValue: unknown
 
         if (metric.rpc) {
-          rawValue = await callRPC(target.url, metric.rpc.method, metric.rpc.params, config.backoff, config.cache_ttl)
+          rawValue = await callRPC(
+            target.url,
+            metric.rpc.method,
+            metric.rpc.params,
+            backoff,
+            cacheTtl,
+            timeout,
+            headers,
+          )
         } else if (metric.rest) {
           rawValue = await callREST(
             target.url,
             metric.rest.path,
             metric.rest.method,
             metric.rest.params,
-            config.backoff,
-            config.cache_ttl,
+            backoff,
+            cacheTtl,
+            timeout,
+            headers,
           )
         } else {
           logger.warn('Metric has neither rpc nor rest configuration')
@@ -109,8 +129,8 @@ router.get('/metrics', async (ctx) => {
               help: m.help,
               type: 'gauge',
               value: 1,
-              prefix: config.metric_prefix,
-              labels: { ...(target.labels || {}), [m.name]: String(extracted) },
+              prefix,
+              labels: { ...labels, [m.name]: String(extracted) },
             })
           } else {
             const value = formatValue(extracted, m.map || metric.map)
@@ -119,8 +139,8 @@ router.get('/metrics', async (ctx) => {
               help: m.help,
               type: m.type,
               value,
-              prefix: config.metric_prefix,
-              labels: target.labels || {},
+              prefix,
+              labels,
             })
           }
         }
