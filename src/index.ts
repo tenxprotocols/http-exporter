@@ -157,7 +157,8 @@ router.get('/metrics', async (ctx) => {
 
 app.use(router.routes()).use(router.allowedMethods())
 
+const host = process.env.HOST || '127.0.0.1'
 const port = process.env.PORT || 3000
-app.listen(port, () => {
-  logger.info(`Exporter running on http://localhost:${port}/metrics`)
+app.listen(Number(port), host, () => {
+  logger.info(`Exporter running on http://${host}:${port}/metrics`)
 })
