@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.1](https://github.com/tenxprotocols/http-exporter/compare/v6.2.0...v6.2.1) (2026-03-10)
+
+
+### Bug Fixes
+
+* **logger:** handle missing pino-pretty dependency gracefully ([777c56e](https://github.com/tenxprotocols/http-exporter/commit/777c56e19bd1774b09919633d366f6940584451c))
+
 ## [6.2.0](https://github.com/tenxprotocols/http-exporter/compare/v6.1.0...v6.2.0) (2026-03-10)
 
 
