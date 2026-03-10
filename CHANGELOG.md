@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.0](https://github.com/tenxprotocols/http-exporter/compare/v6.1.0...v6.2.0) (2026-03-10)
+
+
+### Features
+
+* add HOST env var to configure listen address ([bb5c2bc](https://github.com/tenxprotocols/http-exporter/commit/bb5c2bc6758ec2da7ebd6371a8060235ed6fddaf))
+
 ## [6.1.0](https://github.com/tenxprotocols/http-exporter/compare/v6.0.0...v6.1.0) (2026-03-10)
 
 
