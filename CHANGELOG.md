@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.0](https://github.com/tenxprotocols/http-exporter/compare/v6.0.0...v6.1.0) (2026-03-10)
+
+
+### Features
+
+* add static binary builds for linux and macOS ([cece4fc](https://github.com/tenxprotocols/http-exporter/commit/cece4fc01d7459f313124464711a39e1061f2521))
+
 ## [6.0.0](https://github.com/tenxprotocols/http-exporter/compare/v5.0.1...v6.0.0) (2026-02-28)
 
 
