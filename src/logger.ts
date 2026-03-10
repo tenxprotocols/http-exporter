@@ -3,16 +3,26 @@ import pino from 'pino'
 const isProduction = process.env.NODE_ENV === 'production'
 const isTest = process.env.NODE_ENV === 'test'
 
-const logger = pino({
-  level: process.env.LOG_LEVEL || (isTest ? 'silent' : 'info'),
-  transport: isProduction
-    ? undefined
-    : {
+function createLogger() {
+  const level = process.env.LOG_LEVEL || (isTest ? 'silent' : 'info')
+
+  if (isProduction) {
+    return pino({ level })
+  }
+
+  try {
+    return pino({
+      level,
+      transport: {
         target: 'pino-pretty',
-        options: {
-          colorize: true,
-        },
+        options: { colorize: true },
       },
-})
+    })
+  } catch {
+    return pino({ level })
+  }
+}
+
+const logger = createLogger()
 
 export default logger
