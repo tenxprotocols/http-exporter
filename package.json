@@ -26,6 +26,7 @@
     "prepublishOnly": "tsc",
     "test": "NODE_NO_WARNINGS=1 jest",
     "docker:build": "docker build -t tenx-http-exporter .",
+    "build:binary": "bun build src/index.ts --compile --outfile http-exporter",
     "docker:run": "docker run --rm -p 3000:3000 -v ./config.example.yaml:/usr/src/app/config.yaml tenx-http-exporter"
   },
   "keywords": [],
